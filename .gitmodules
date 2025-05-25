@@ -1,3 +1,6 @@
 [submodule "firware"]
 	path = firware
 	url = https://github.com/CrazyPaha/Diploma.git
+[submodule "firmware"]
+	path = firmware
+	url = https://github.com/CrazyPaha/Diploma
