@@ -1,5 +1,10 @@
 .App {
   text-align: center;
+  font-family: 'Segoe UI', Arial, sans-serif;
+  background: linear-gradient(120deg, #f8fafc 0%, #e0e7ef 100%);
+  min-height: 100vh;
+  padding: 0;
+  margin: 0;
 }
 
 .App-logo {
@@ -26,6 +31,113 @@
 
 .App-link {
   color: #61dafb;
+}
+
+/* Сучасний стиль для вкладок і контенту */
+.App-nav {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 24px;
+  background: #2d3748;
+  padding: 24px 0 16px 0;
+  border-bottom-left-radius: 24px;
+  border-bottom-right-radius: 24px;
+  box-shadow: 0 4px 16px rgba(44, 62, 80, 0.08);
+  position: relative;
+}
+
+.App-nav-center {
+  display: flex;
+  gap: 24px;
+  margin: 0 auto;
+}
+
+.App-nav-center button {
+  background: none;
+  border: none;
+  color: #cbd5e1;
+  font-size: 1.2rem;
+  padding: 10px 32px;
+  border-radius: 20px 20px 0 0;
+  cursor: pointer;
+  transition: background 0.2s, color 0.2s, box-shadow 0.2s;
+  outline: none;
+  font-weight: 500;
+  letter-spacing: 1px;
+  margin: 0 2px;
+  box-shadow: none;
+}
+
+.App-nav-center button.active {
+  background: #fff;
+  color: #2d3748;
+  box-shadow: 0 2px 8px rgba(44, 62, 80, 0.10);
+  z-index: 1;
+}
+
+.App-nav-center button:hover:not(.active) {
+  background: #475569;
+  color: #fff;
+}
+
+.App-nav-options {
+  position: absolute;
+  right: 32px;
+  top: 18px;
+  background: none;
+  border: none;
+  color: #cbd5e1;
+  font-size: 1.2rem;
+  padding: 10px 24px 10px 16px;
+  border-radius: 20px;
+  cursor: pointer;
+  transition: background 0.2s, color 0.2s, box-shadow 0.2s;
+  outline: none;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+}
+
+.App-nav-options svg {
+  margin-right: 6px;
+  vertical-align: middle;
+}
+
+.App-nav-options.active, .App-nav-options:hover {
+  background: #fff;
+  color: #2d3748;
+  box-shadow: 0 2px 8px rgba(44, 62, 80, 0.10);
+}
+
+.App-content {
+  max-width: 700px;
+  margin: 40px auto 0 auto;
+  background: #fff;
+  border-radius: 24px;
+  box-shadow: 0 8px 32px rgba(44, 62, 80, 0.10);
+  padding: 40px 32px 32px 32px;
+  min-height: 320px;
+  transition: box-shadow 0.2s;
+}
+
+@media (max-width: 800px) {
+  .App-content {
+    padding: 24px 8px;
+    max-width: 98vw;
+  }
+  .App-nav {
+    gap: 8px;
+    padding: 16px 0 8px 0;
+  }
+  .App-nav-options {
+    right: 8px;
+    top: 8px;
+    padding: 8px 12px 8px 8px;
+  }
+  .App-nav-center {
+    gap: 8px;
+  }
 }
 
 @keyframes App-logo-spin {
