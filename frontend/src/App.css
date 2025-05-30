@@ -121,22 +121,139 @@
   transition: box-shadow 0.2s;
 }
 
-@media (max-width: 800px) {
-  .App-content {
+/* Додаємо стилі для нової трьохпанельної структури */
+.App-main-layout {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: stretch;
+  margin: 32px 0 0 0;
+  width: 100vw;
+  min-height: 540px;
+  box-sizing: border-box;
+  padding-left: 32px;
+  padding-right: 32px;
+}
+
+.App-info-panel, .App-menu-panel {
+  background: #f8fafc;
+  border-radius: 32px;
+  box-shadow: 0 2px 16px rgba(44, 62, 80, 0.06);
+  width: 200px;
+  min-width: 160px;
+  max-width: 220px;
+  padding: 24px 12px 24px 12px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  height: 100%;
+  box-sizing: border-box;
+  margin-left: 0;
+  margin-right: 0;
+}
+
+.App-menu-panel {
+  align-items: flex-end;
+}
+
+.info-title, .menu-title {
+  font-family: inherit;
+  font-size: 1.5rem;
+  font-weight: bold;
+  margin-bottom: 4px;
+}
+
+.info-divider, .menu-divider {
+  width: 90%;
+  height: 3px;
+  background: #222;
+  border-radius: 2px;
+  margin-bottom: 18px;
+}
+
+.menu-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  width: 100%;
+}
+.menu-item {
+  display: flex;
+  align-items: center;
+  font-family: inherit;
+  font-size: 1.15rem;
+  margin-bottom: 8px;
+}
+.menu-item input[type="checkbox"] {
+  width: 22px;
+  height: 22px;
+  margin-right: 8px;
+  accent-color: #222;
+}
+.menu-item label {
+  cursor: pointer;
+}
+
+.App-main-content {
+  flex: 1 1 0;
+  background: #fff;
+  border-radius: 24px;
+  box-shadow: 0 8px 32px rgba(44, 62, 80, 0.10);
+  padding: 40px 32px 32px 32px;
+  min-width: 0;
+  min-height: 320px;
+  margin: 0 24px;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  box-sizing: border-box;
+}
+
+@media (max-width: 1200px) {
+  .App-main-layout {
+    padding-left: 12px;
+    padding-right: 12px;
+  }
+  .App-info-panel, .App-menu-panel {
+    min-width: 100px;
+    max-width: 120px;
+    width: 100px;
+    padding: 12px 4px;
+  }
+  .App-main-content {
     padding: 24px 8px;
-    max-width: 98vw;
+    margin: 0 8px;
   }
-  .App-nav {
-    gap: 8px;
-    padding: 16px 0 8px 0;
+}
+
+@media (max-width: 800px) {
+  .App-main-layout {
+    flex-direction: column;
+    align-items: stretch;
+    margin: 12px auto 0 auto;
+    padding-left: 4px;
+    padding-right: 4px;
   }
-  .App-nav-options {
-    right: 8px;
-    top: 8px;
-    padding: 8px 12px 8px 8px;
+  .App-info-panel, .App-menu-panel {
+    flex-direction: row;
+    min-width: unset;
+    max-width: unset;
+    width: 100%;
+    margin: 0 0 12px 0;
+    padding: 8px 4px;
+    justify-content: flex-start;
   }
-  .App-nav-center {
-    gap: 8px;
+  .App-info-panel {
+    margin-bottom: 8px;
+    align-items: flex-start;
+  }
+  .App-menu-panel {
+    margin-top: 8px;
+    align-items: flex-end;
+  }
+  .App-main-content {
+    margin: 0;
+    padding: 12px 2vw;
   }
 }
 

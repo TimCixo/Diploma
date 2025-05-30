@@ -45,11 +45,30 @@ function App() {
           Options
         </button>
       </nav>
-      <main className="App-content">
-        {tab === 'hardware' && <HardwareTab />}
-        {tab === 'software' && <SoftwareTab />}
-        {tab === 'options' && <OptionsTab />}
-      </main>
+      <div className="App-main-layout">
+        <aside className="App-info-panel">
+          <div className="info-title">Info</div>
+          <div className="info-divider" />
+          {/* Тут буде інформація */}
+        </aside>
+        <main className="App-main-content">
+          {tab === 'hardware' && <HardwareTab />}
+          {tab === 'software' && <SoftwareTab />}
+          {tab === 'options' && <OptionsTab />}
+        </main>
+        <aside className="App-menu-panel">
+          <div className="menu-title">Menu</div>
+          <div className="menu-divider" />
+          <ul className="menu-list">
+            {[1,2,3,4,5,6].map(i => (
+              <li key={i} className="menu-item">
+                <input type="checkbox" id={`obj${i}`} />
+                <label htmlFor={`obj${i}`}>{`Об'єкт ${i}`}</label>
+              </li>
+            ))}
+          </ul>
+        </aside>
+      </div>
     </div>
   );
 }
