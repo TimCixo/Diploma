@@ -7,6 +7,42 @@ import OptionsTab from './tabs/OptionsTab';
 function App() {
   const [tab, setTab] = useState('hardware');
 
+  // Вміст для Info та Menu залежно від вкладки
+  const infoContent = {
+    hardware: <div>Інформація про апаратну частину</div>,
+    software: <div>Інформація про програмну частину</div>,
+    options: <div>Інформація про налаштування</div>
+  };
+
+  const menuContent = {
+    hardware: (
+      <ul className="menu-list">
+        {[1,2,3].map(i => (
+          <li key={i} className="menu-item">
+            <input type="checkbox" id={`hw${i}`} />
+            <label htmlFor={`hw${i}`}>{`Датчик ${i}`}</label>
+          </li>
+        ))}
+      </ul>
+    ),
+    software: (
+      <ul className="menu-list">
+        {[1,2,3,4,5,6].map(i => (
+          <li key={i} className="menu-item">
+            <input type="checkbox" id={`obj${i}`} />
+            <label htmlFor={`obj${i}`}>{`Об'єкт ${i}`}</label>
+          </li>
+        ))}
+      </ul>
+    ),
+    options: (
+      <ul className="menu-list">
+        <li className="menu-item"><input type="checkbox" id="opt1" /><label htmlFor="opt1">Опція 1</label></li>
+        <li className="menu-item"><input type="checkbox" id="opt2" /><label htmlFor="opt2">Опція 2</label></li>
+      </ul>
+    )
+  };
+
   return (
     <div className="App">
       <nav className="App-nav">
@@ -49,7 +85,7 @@ function App() {
         <aside className="App-info-panel">
           <div className="info-title">Info</div>
           <div className="info-divider" />
-          {/* Тут буде інформація */}
+          {infoContent[tab]}
         </aside>
         <main className="App-main-content">
           {tab === 'hardware' && <HardwareTab />}
@@ -59,14 +95,7 @@ function App() {
         <aside className="App-menu-panel">
           <div className="menu-title">Menu</div>
           <div className="menu-divider" />
-          <ul className="menu-list">
-            {[1,2,3,4,5,6].map(i => (
-              <li key={i} className="menu-item">
-                <input type="checkbox" id={`obj${i}`} />
-                <label htmlFor={`obj${i}`}>{`Об'єкт ${i}`}</label>
-              </li>
-            ))}
-          </ul>
+          {menuContent[tab]}
         </aside>
       </div>
     </div>
