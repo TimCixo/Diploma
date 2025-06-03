@@ -1,0 +1,8 @@
+{
+    "name": "Button",
+    "description": "Push button module for user input",
+    "pinout": [
+        { "name": "GND", "index": 0, "pin": null, "type": "power", "description": "Ground" },
+        { "name": "Button", "index": 1, "pin": 0, "type": "digital", "description": "Digital pin for button input" }
+    ]
+}

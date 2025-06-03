@@ -1,0 +1,25 @@
+{
+  "name": "ESP32-C3_Type-C",
+  "description": "Development board with USB Type-C and ESP32-C3 microcontroller",
+  "pinout": [
+    { "name": "5V", "index": 0, "pin": null, "type": "power", "description": "5V power supply" },
+    { "name": "GND", "index": 1, "pin": null, "type": "power", "description": "Ground" },
+    { "name": "3V3", "index": 2, "pin": null, "type": "power", "description": "3.3V power supply" },
+
+    { "name": "GPIO0", "index": 3, "pin": 0, "type": "analog", "description": "GPIO0, ADC1-0" },
+    { "name": "GPIO1", "index": 4, "pin": 1, "type": "analog", "description": "GPIO1, ADC1-1" },
+    { "name": "GPIO2", "index": 5, "pin": 2, "type": "analog", "description": "GPIO2, A0" },
+    { "name": "GPIO3", "index": 6, "pin": 3, "type": "analog", "description": "GPIO3, A1" },
+    { "name": "GPIO4", "index": 7, "pin": 4, "type": "analog", "description": "GPIO4, A2" },
+    { "name": "GPIO5", "index": 8, "pin": 5, "type": "analog", "description": "GPIO5, A3" },
+
+    { "name": "GPIO6", "index": 9, "pin": 6, "type": "sda", "description": "GPIO6, I2C SDA" },
+    { "name": "GPIO7", "index": 10, "pin": 7, "type": "scl", "description": "GPIO7, I2C SCL" },
+    { "name": "GPIO8", "index": 11, "pin": 8, "type": "sck", "description": "GPIO8, SPI SCK" },
+    { "name": "GPIO9", "index": 12, "pin": 9, "type": "miso", "description": "GPIO9, SPI MISO" },
+    { "name": "GPIO10", "index": 13, "pin": 10, "type": "mosi", "description": "GPIO10, SPI MOSI" },
+
+    { "name": "GPIO20", "index": 14, "pin": 20, "type": "rx", "description": "GPIO20, UART RX" },
+    { "name": "GPIO21", "index": 15, "pin": 21, "type": "tx", "description": "GPIO21, UART TX" }
+  ]
+}
