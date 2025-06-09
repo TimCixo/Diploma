@@ -1,74 +1,105 @@
+import asyncio
+import json
+import os
+import socket
+import threading
 from flask import Flask, request, jsonify
 import subprocess
-import os
-import threading
-import requests
-import time
+import websockets
 
 app = Flask(__name__)
 
-# Path to the frontend directory
+# Location of the React frontend
 FRONTEND_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', '..', 'frontend')
 
-# Simple microcontroller client communicating over HTTP
-class Microcontroller:
-    def __init__(self, host: str = '192.168.1.50'):
-        # Base address of the device on the local network
-        self.base_url = f'http://{host}'
+WS_PORT = 8765
+DISCOVERY_PORT = 37020
 
-    def send_command(self, pin: int, value: int, delay: float = 0):
-        payload = {'pin': pin, 'value': value, 'delay': delay}
-        try:
-            requests.post(f'{self.base_url}/command', json=payload, timeout=2)
-        except requests.RequestException as exc:
-            # In this simple example we just log errors
-            print('Failed to send command:', exc)
+connected_devices = {}  # device_id -> websocket
+known_devices = {}      # device_id -> info dictionary
+current_configuration = {}
 
-microcontroller = Microcontroller()
+# ----------------------- HTTP API -----------------------
+@app.route('/configuration', methods=['POST'])
+def configuration():
+    """Store configuration JSON and broadcast it to connected devices."""
+    global current_configuration
+    current_configuration = request.get_json(force=True) or {}
+    message = json.dumps({'configuration': current_configuration})
+    for ws in list(connected_devices.values()):
+        asyncio.run_coroutine_threadsafe(ws.send(message), ws.loop)
+    return jsonify({'status': 'ok'})
 
-# In-memory algorithm storage
-current_algorithm = []
+@app.route('/devices', methods=['GET'])
+def devices():
+    return jsonify(list(known_devices.values()))
 
-@app.route('/program', methods=['POST'])
-def program():
-    """Receive microcontroller config and algorithm."""
-    global current_algorithm, microcontroller
-    data = request.get_json(force=True)
-
-    if isinstance(data, dict):
-        config = data.get('config') or {}
-        algo = data.get('algorithm')
-    else:
-        config = {}
-        algo = data
-
-    host = config.get('host')
-    if host:
-        microcontroller = Microcontroller(host)
-
-    if algo is not None:
-        current_algorithm = algo
-
-    return jsonify({'status': 'loaded'})
-
-@app.route('/run', methods=['POST'])
-def run_algorithm():
-    for step in current_algorithm:
-        pin = step.get('pin')
-        value = step.get('value')
-        delay = step.get('delay', 0)
-        microcontroller.send_command(pin, value, delay)
-        time.sleep(delay)
-    return jsonify({'status': 'completed'})
+@app.route('/devices/<device_id>', methods=['GET'])
+def device_info(device_id):
+    info = known_devices.get(device_id)
+    if not info:
+        return jsonify({'error': 'not found'}), 404
+    return jsonify(info)
 
 @app.route('/')
 def index():
-    return jsonify({'message': 'Server running', 'frontend': 'http://localhost:3000'})
+    return jsonify({'message': 'backend running'})
 
-# Helper to start react dev server
+# ----------------------- UDP Discovery -----------------------
+def get_local_ip():
+    sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+    try:
+        sock.connect(('8.8.8.8', 80))
+        ip = sock.getsockname()[0]
+    except OSError:
+        ip = '127.0.0.1'
+    finally:
+        sock.close()
+    return ip
+
+def discovery_server():
+    sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+    sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+    sock.bind(('', DISCOVERY_PORT))
+    while True:
+        data, addr = sock.recvfrom(1024)
+        if data.decode().strip() == 'DISCOVER_MASTER':
+            response = json.dumps({'host': get_local_ip(), 'port': WS_PORT})
+            sock.sendto(response.encode(), addr)
+
+# ----------------------- WebSocket -----------------------
+async def ws_handler(websocket, path):
+    try:
+        handshake = await websocket.recv()
+        info = json.loads(handshake)
+        device_id = info.get('id', websocket.remote_address[0])
+    except Exception:
+        await websocket.close()
+        return
+    known_devices[device_id] = {'id': device_id, 'ip': websocket.remote_address[0]}
+    connected_devices[device_id] = websocket
+    if current_configuration:
+        await websocket.send(json.dumps({'configuration': current_configuration}))
+    try:
+        async for _ in websocket:
+            pass
+    finally:
+        connected_devices.pop(device_id, None)
+        known_devices.pop(device_id, None)
+
+def websocket_server(loop):
+    asyncio.set_event_loop(loop)
+    start_server = websockets.serve(ws_handler, '0.0.0.0', WS_PORT)
+    loop.run_until_complete(start_server)
+    loop.run_forever()
+
+# ----------------------- Frontend Helper -----------------------
 def start_react():
     subprocess.Popen(['npm', 'start'], cwd=FRONTEND_PATH)
 
 if __name__ == '__main__':
+    ws_loop = asyncio.new_event_loop()
+    threading.Thread(target=websocket_server, args=(ws_loop,), daemon=True).start()
+    threading.Thread(target=discovery_server, daemon=True).start()
     threading.Thread(target=start_react, daemon=True).start()
-    app.run(debug=True)
+    app.run(host='0.0.0.0', port=5000)
