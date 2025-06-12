@@ -21,12 +21,50 @@ connected_devices = {}  # device_id -> websocket
 known_devices = {}      # device_id -> info dictionary
 current_configuration = {}
 
+
+def _print_node_sequence(config):
+    """Print nodes from the entry node to the output node in order."""
+    nodes = config.get("nodes", [])
+    if not nodes:
+        return
+
+    node_map = {n.get("id"): n for n in nodes}
+    start = config.get("entry")
+    if not start:
+        for n in nodes:
+            if n.get("type") == "input":
+                start = n.get("id")
+                break
+
+    visited = set()
+    current = start
+    while current and current not in visited:
+        node = node_map.get(current)
+        if not node:
+            break
+        print(f"Node {node.get('id')} ({node.get('type')})", flush=True)
+        if node.get("type") == "output":
+            break
+
+        outputs = node.get("outputs")
+        next_id = None
+        if isinstance(outputs, list) and outputs:
+            next_id = outputs[0]
+        elif isinstance(outputs, str):
+            next_id = outputs
+        elif isinstance(outputs, dict):
+            next_id = outputs.get("next") or outputs.get("node")
+
+        visited.add(current)
+        current = next_id
+
 # ----------------------- HTTP API -----------------------
 @app.route('/configuration', methods=['POST'])
 def configuration():
     """Store configuration JSON and broadcast it to connected devices."""
     global current_configuration
     current_configuration = request.get_json(force=True) or {}
+    _print_node_sequence(current_configuration)
     message = json.dumps({'configuration': current_configuration})
     for ws in list(connected_devices.values()):
         asyncio.run_coroutine_threadsafe(ws.send(message), ws.loop)
