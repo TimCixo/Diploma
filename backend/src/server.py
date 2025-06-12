@@ -97,11 +97,12 @@ def start_websocket(loop):
 
 # ----------------------- Frontend Helper -----------------------
 def start_react():
-    """Launch the React development server."""
-    command = ['npm', 'run', 'dev']
-    if os.name == 'nt':
-        command[0] = 'npm.cmd'
-    subprocess.Popen(command, cwd=FRONTEND_PATH)
+    """Ensure dependencies and launch the React development server."""
+    npm = 'npm.cmd' if os.name == 'nt' else 'npm'
+    # Install packages if node_modules folder is missing
+    if not os.path.exists(os.path.join(FRONTEND_PATH, 'node_modules')):
+        subprocess.run([npm, 'install'], cwd=FRONTEND_PATH, check=False)
+    subprocess.Popen([npm, 'run', 'dev'], cwd=FRONTEND_PATH)
 
 if __name__ == '__main__':
     ws_loop = asyncio.new_event_loop()
