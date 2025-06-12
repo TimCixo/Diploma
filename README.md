@@ -77,6 +77,8 @@ The backend communicates with the microcontroller over the local network. On sta
    }
    ```
    All connected devices will immediately receive this configuration over the WebSocket connection.
+   When the configuration is uploaded the backend prints the pin directions and a
+   tree of the nodes so you can verify the workflow.
 
 
 ## Backend API

@@ -22,8 +22,18 @@ known_devices = {}      # device_id -> info dictionary
 current_configuration = {}
 
 
-def _print_node_sequence(config):
-    """Print nodes from the entry node to the output node in order."""
+
+def _print_pin_states(config):
+    """Print the state of each pin from the configuration."""
+    pins = config.get("pins", {})
+    for name, info in pins.items():
+        pin = info.get("pin")
+        direction = info.get("direction")
+        print(f"Pin {pin} ({name}) - {direction}", flush=True)
+
+
+def _print_node_tree(config):
+    """Print the node tree starting from the entry node."""
     nodes = config.get("nodes", [])
     if not nodes:
         return
@@ -36,27 +46,30 @@ def _print_node_sequence(config):
                 start = n.get("id")
                 break
 
-    visited = set()
-    current = start
-    while current and current not in visited:
-        node = node_map.get(current)
+    def recurse(node_id, indent, visited):
+        if not node_id or node_id in visited:
+            return
+        visited.add(node_id)
+        node = node_map.get(node_id)
         if not node:
-            break
-        print(f"Node {node.get('id')} ({node.get('type')})", flush=True)
-        if node.get("type") == "output":
-            break
+            return
+        print("    " * indent + f"{node.get('id')} ({node.get('type')})", flush=True)
 
         outputs = node.get("outputs")
-        next_id = None
-        if isinstance(outputs, list) and outputs:
-            next_id = outputs[0]
+        next_ids = []
+        if isinstance(outputs, list):
+            next_ids = outputs
         elif isinstance(outputs, str):
-            next_id = outputs
+            next_ids = [outputs]
         elif isinstance(outputs, dict):
-            next_id = outputs.get("next") or outputs.get("node")
+            for v in outputs.values():
+                if isinstance(v, str):
+                    next_ids.append(v)
 
-        visited.add(current)
-        current = next_id
+        for nxt in next_ids:
+            recurse(nxt, indent + 1, visited)
+
+    recurse(start, 0, set())
 
 # ----------------------- HTTP API -----------------------
 @app.route('/configuration', methods=['POST'])
@@ -64,7 +77,8 @@ def configuration():
     """Store configuration JSON and broadcast it to connected devices."""
     global current_configuration
     current_configuration = request.get_json(force=True) or {}
-    _print_node_sequence(current_configuration)
+    _print_pin_states(current_configuration)
+    _print_node_tree(current_configuration)
     message = json.dumps({'configuration': current_configuration})
     for ws in list(connected_devices.values()):
         asyncio.run_coroutine_threadsafe(ws.send(message), ws.loop)
