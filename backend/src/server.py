@@ -87,19 +87,25 @@ async def ws_handler(websocket, path):
         connected_devices.pop(device_id, None)
         known_devices.pop(device_id, None)
 
-def websocket_server(loop):
+async def websocket_server():
+    async with websockets.serve(ws_handler, '0.0.0.0', WS_PORT):
+        await asyncio.Future()
+
+def start_websocket(loop):
     asyncio.set_event_loop(loop)
-    start_server = websockets.serve(ws_handler, '0.0.0.0', WS_PORT)
-    loop.run_until_complete(start_server)
-    loop.run_forever()
+    loop.run_until_complete(websocket_server())
 
 # ----------------------- Frontend Helper -----------------------
 def start_react():
-    subprocess.Popen(['npm', 'start'], cwd=FRONTEND_PATH)
+    """Launch the React development server."""
+    command = ['npm', 'run', 'dev']
+    if os.name == 'nt':
+        command[0] = 'npm.cmd'
+    subprocess.Popen(command, cwd=FRONTEND_PATH)
 
 if __name__ == '__main__':
     ws_loop = asyncio.new_event_loop()
-    threading.Thread(target=websocket_server, args=(ws_loop,), daemon=True).start()
+    threading.Thread(target=start_websocket, args=(ws_loop,), daemon=True).start()
     threading.Thread(target=discovery_server, daemon=True).start()
     threading.Thread(target=start_react, daemon=True).start()
     app.run(host='0.0.0.0', port=5000)
