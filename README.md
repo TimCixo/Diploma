@@ -17,13 +17,19 @@ The backend communicates with the microcontroller over the local network. On sta
    source venv/bin/activate  # on Windows use venv\Scripts\activate
    pip install -r backend/requirements.txt
    ```
-2. From the repository root, run the server:
+2. Initialize the submodules and install the frontend dependencies:
+   ```bash
+   git submodule update --init --recursive
+   cd frontend && npm install
+   cd ..
+   ```
+3. From the repository root, run the server:
    ```bash
    python backend/src/server.py
    ```
    The server will automatically start the React development server and provide a link to `http://localhost:3000`.
 
-3. Upload the microcontroller program:
+4. Upload the microcontroller program:
    - `POST /configuration` – send the workflow configuration in JSON format. A typical payload looks like:
    ```json
    {
