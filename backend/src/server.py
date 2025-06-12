@@ -9,7 +9,7 @@ import subprocess
 import websockets
 
 app = Flask(__name__)
-CORS(app)
+CORS(app, resources={r"/*": {"origins": "http://localhost:5173"}})
 
 # Location of the React frontend
 FRONTEND_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', '..', 'frontend')
@@ -100,6 +100,10 @@ def start_websocket(loop):
 # ----------------------- Frontend Helper -----------------------
 def start_react():
     """Ensure dependencies and launch the React development server."""
+    if not os.path.exists(os.path.join(FRONTEND_PATH, 'package.json')):
+        print("Frontend submodule not found. Did you run 'git submodule update --init --recursive'?", flush=True)
+        return
+
     npm = 'npm.cmd' if os.name == 'nt' else 'npm'
     # Install packages if node_modules folder is missing
     if not os.path.exists(os.path.join(FRONTEND_PATH, 'node_modules')):

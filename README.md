@@ -23,6 +23,12 @@ The backend communicates with the microcontroller over the local network. On sta
    cd frontend && npm install
    cd ..
    ```
+   If you want to run the React server yourself, launch it from the `frontend`
+   directory:
+   ```bash
+   cd frontend
+   npm run dev
+   ```
 3. From the repository root, run the server:
    ```bash
    python backend/src/server.py
