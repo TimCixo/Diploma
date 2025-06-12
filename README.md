@@ -11,8 +11,10 @@ The backend communicates with the microcontroller over the local network. On sta
 
 ## Running the backend and frontend
 
-1. Install Python dependencies:
+1. Create and activate a virtual environment and install the Python dependencies:
    ```bash
+   python -m venv venv
+   source venv/bin/activate  # on Windows use venv\Scripts\activate
    pip install -r backend/requirements.txt
    ```
 2. From the repository root, run the server:
@@ -21,6 +23,56 @@ The backend communicates with the microcontroller over the local network. On sta
    ```
    The server will automatically start the React development server and provide a link to `http://localhost:3000`.
 
-3. Send the microcontroller configuration and algorithm:
-   - `POST /program` – JSON containing `config` (with the device IP) and `algorithm`.
-   - `POST /run` – execute the uploaded algorithm by sending commands over Wi‑Fi.
+3. Upload the microcontroller program:
+   - `POST /configuration` – send the workflow configuration in JSON format. A typical payload looks like:
+   ```json
+   {
+       "entry": "node_0",
+       "exit": "node_4",
+       "pins": {
+           "Push Button": {"pin": 2, "direction": "input"},
+           "Potentiometer": {"pin": 5, "direction": "input"},
+           "Piezo Buzzer": {"pin": 9, "direction": "output"}
+       },
+       "constants": {},
+       "variables": {
+           "hardware_11: Signal": 0,
+           "hardware_12: Wiper": 0
+       },
+       "nodes": [
+           {"id": "node_0", "type": "input", "outputs": ["node_4", "node_2", "node_3"]},
+           {"id": "node_1", "type": "output", "outputs": []},
+           {
+               "id": "node_2",
+               "type": "input_component",
+               "outputs": {"variable": "var_hardware_11: Signal"},
+               "pins": {"pin1": 2}
+           },
+           {
+               "id": "node_3",
+               "type": "input_component",
+               "outputs": {"variable": "var_hardware_12: Wiper"},
+               "pins": {"pin1": 5}
+           },
+           {
+               "id": "node_4",
+               "type": "output_component",
+               "outputs": ["node_1"],
+               "pins": {"pin1": 9},
+               "params": {}
+           }
+       ]
+   }
+   ```
+   All connected devices will immediately receive this configuration over the WebSocket connection.
+
+
+## Backend API
+
+- `POST /configuration` – upload the microcontroller algorithm configuration in JSON.
+- `GET /devices` – list microcontrollers discovered on the local network.
+- `GET /devices/<id>` – information about a specific device.
+
+The server listens for UDP broadcasts with the `DISCOVER_MASTER` message and
+responds with its IP address and WebSocket port so that ESP32 devices can find
+it. After discovery a device connects via WebSocket to receive JSON commands.
