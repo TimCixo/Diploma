@@ -4,10 +4,12 @@ import os
 import socket
 import threading
 from flask import Flask, request, jsonify
+from flask_cors import CORS
 import subprocess
 import websockets
 
 app = Flask(__name__)
+CORS(app)
 
 # Location of the React frontend
 FRONTEND_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', '..', 'frontend')
