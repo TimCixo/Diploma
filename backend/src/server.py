@@ -4,10 +4,12 @@ import os
 import socket
 import threading
 from flask import Flask, request, jsonify
+from flask_cors import CORS
 import subprocess
 import websockets
 
 app = Flask(__name__)
+CORS(app, resources={r"/*": {"origins": "http://localhost:5173"}})
 
 # Location of the React frontend
 FRONTEND_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', '..', 'frontend')
@@ -19,12 +21,64 @@ connected_devices = {}  # device_id -> websocket
 known_devices = {}      # device_id -> info dictionary
 current_configuration = {}
 
+
+
+def _print_pin_states(config):
+    """Print the state of each pin from the configuration."""
+    pins = config.get("pins", {})
+    for name, info in pins.items():
+        pin = info.get("pin")
+        direction = info.get("direction")
+        print(f"Pin {pin} ({name}) - {direction}", flush=True)
+
+
+def _print_node_tree(config):
+    """Print the node tree starting from the entry node."""
+    nodes = config.get("nodes", [])
+    if not nodes:
+        return
+
+    node_map = {n.get("id"): n for n in nodes}
+    start = config.get("entry")
+    if not start:
+        for n in nodes:
+            if n.get("type") == "input":
+                start = n.get("id")
+                break
+
+    def recurse(node_id, indent, visited):
+        if not node_id or node_id in visited:
+            return
+        visited.add(node_id)
+        node = node_map.get(node_id)
+        if not node:
+            return
+        print("    " * indent + f"{node.get('id')} ({node.get('type')})", flush=True)
+
+        outputs = node.get("outputs")
+        next_ids = []
+        if isinstance(outputs, list):
+            next_ids = outputs
+        elif isinstance(outputs, str):
+            next_ids = [outputs]
+        elif isinstance(outputs, dict):
+            for v in outputs.values():
+                if isinstance(v, str):
+                    next_ids.append(v)
+
+        for nxt in next_ids:
+            recurse(nxt, indent + 1, visited)
+
+    recurse(start, 0, set())
+
 # ----------------------- HTTP API -----------------------
 @app.route('/configuration', methods=['POST'])
 def configuration():
     """Store configuration JSON and broadcast it to connected devices."""
     global current_configuration
     current_configuration = request.get_json(force=True) or {}
+    _print_pin_states(current_configuration)
+    _print_node_tree(current_configuration)
     message = json.dumps({'configuration': current_configuration})
     for ws in list(connected_devices.values()):
         asyncio.run_coroutine_threadsafe(ws.send(message), ws.loop)
@@ -98,6 +152,10 @@ def start_websocket(loop):
 # ----------------------- Frontend Helper -----------------------
 def start_react():
     """Ensure dependencies and launch the React development server."""
+    if not os.path.exists(os.path.join(FRONTEND_PATH, 'package.json')):
+        print("Frontend submodule not found. Did you run 'git submodule update --init --recursive'?", flush=True)
+        return
+
     npm = 'npm.cmd' if os.name == 'nt' else 'npm'
     # Install packages if node_modules folder is missing
     if not os.path.exists(os.path.join(FRONTEND_PATH, 'node_modules')):
