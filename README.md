@@ -11,8 +11,10 @@ The backend communicates with the microcontroller over the local network. On sta
 
 ## Running the backend and frontend
 
-1. Install Python dependencies:
+1. Create and activate a virtual environment and install the Python dependencies:
    ```bash
+   python -m venv venv
+   source venv/bin/activate  # on Windows use venv\Scripts\activate
    pip install -r backend/requirements.txt
    ```
 2. From the repository root, run the server:
